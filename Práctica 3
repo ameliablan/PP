@@ -1,2 +1,26 @@
-// Un valor pi : float que sea una buena aproximaci´on del numero π
-float 
+(* Ejercicio 1)
+
+let pi = 4.0 *. atan 1.0
+
+let e = exp 1.0
+
+let max_int_f = float_of_int max_int
+
+let per = function r -> 2.0 *. pi *. r
+
+let area = function r -> pi *. r *. r
+
+let next_char = function c -> char_of_int (int_of_char c + 1)
+
+let abs_f = function x -> if x < 0.0 then -.x else x
+
+let odd = function n -> n mod 2 <> 0
+
+let next_3_mult = function n -> 
+  if n >= 0 then ((n / 3) + 1) * 3 
+  else if n mod 3 = 0 then n + 3 
+  else (n / 3) * 3
+
+let is_letter = function c -> (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+
+let string_of_bool = function true -> "verdadero" | false -> "falso"
