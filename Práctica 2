@@ -1,63 +1,191 @@
-let maximo = max_int;;(* Ligadura global de 'maximo' al mayor entero representable (2^62 - 1 en arquitecturas de 64 bits con bit de tag). Tipo: int *)
-let minimo = min_int;;(* Ligadura global de 'minimo' al menor entero representable (-2^62). Tipo: int *)
-minimo + maximo;;(* Desbordamiento aritmético controlado (aritmética modular en complemento a dos); evalúa a -1 de tipo int *)
-minimo + maximo + 1;;(* Evaluación secuencial asociativa por la izquierda: (-1) + 1; evalúa a 0 de tipo int *)
-maximo + 1;;(* Overflow aritmético: sumar 1 al valor entero máximo produce un salto cíclico al mínimo representable 'min_int'. Tipo: int *)
-minimo = maximo + 1;;(* Operador de igualdad estructural polimórfica (=): compara 'min_int' con el resultado desbordado de 'maximo + 1'; evalúa a true de tipo bool *)
-2 * minimo;;(* Multiplicación con desbordamiento: desplaza los bits produciendo 0 en la representación entera de 63 bits. Tipo: int *)
-minimo - 1 = maximo;;(* Underflow aritmético: restar 1 a 'min_int' genera el valor 'max_int', coincidiendo con el miembro derecho; evalúa a true de tipo bool *)
-2 * maximo;;(* Overflow aritmético en el producto (2 * (max_int)); evalúa a -2 de tipo int *)
-let maximo = 1. /. 0.;;(* Enmascaramiento (shadowing) de 'maximo' como valor float. División en coma flotante según estándar IEEE 754; evalúa a infinity *)
-let minimo = -1.0 /. 0.;;(* Enmascaramiento de 'minimo' como float. División según IEEE 754 con signo negativo; evalúa a neg_infinity *)
-1. /. maximo;;(* Límite de 1.0 entre infinito según IEEE 754; evalúa a 0.0 de tipo float *)
-1. /. minimo;;(* Límite de 1.0 entre menos infinito según IEEE 754; evalúa a -0.0 (cero negativo) de tipo float *)
-1. /. maximo = 1. /. minimo;;(* Igualdad estructural IEEE 754: el estándar define que +0.0 y -0.0 son numéricamente equivalentes; evalúa a true de tipo bool *)
-0. /. 0.;;(* Indeterminación aritmética según IEEE 754; evalúa al valor especial nan (Not a Number) de tipo float *)
-maximo +. maximo;;(* Suma de valores flotantes mediante el operador infijo '+.'; infinity +. infinity evalúa a infinity de tipo float *)
-maximo -. maximo;;(* Resta de infinitos mediante el operador '-.'; indeterminación que evalúa a nan de tipo float *)
--. maximo = minimo;;(* Operador unario de negación flotante '-.' sobre 'infinity', que produce 'neg_infinity' e iguala a 'minimo'; evalúa a true de tipo bool *)
-(*maximo + minimo;; Error de tipos en tiempo de compilación: el operador monomórfico '+' espera operandos de tipo int, pero las ligaduras actuales son float*)
-not (minimo < maximo);;(* Aplicación de la función booleana 'Stdlib.not' sobre una comparación estructural que devuelve true; evalúa a false de tipo bool *)
-let not = "no";;(* Enmascaramiento del identificador global 'not', reemplazando la función estándar por un literal de tipo string *)
-(*not (minimo < maximo);; Error de tipos: el identificador 'not' está ligado a string y no posee tipo funcional ('a -> 'b) para ser aplicado como función*)
-Stdlib.not (minimo < maximo);;(* Acceso cualificado al módulo 'Stdlib' para invocar la función de negación original soslayando el enmascaramiento local; evalúa a false de tipo bool *)
-let not = "si" in not ^ not;;(* Ligadura local de alcance estricto mediante 'let ... in'. Evalúa a la concatenación "sisi" sin alterar el entorno global*)
-not;;(* Consulta del identificador en el entorno global: retiene el valor string "no" definido previamente fuera del alcance local*)
-(function x -> 2 * x);;(* Expresión lambda o abstracción funcional anónima. Inferencia de tipo: int -> int; evalúa al valor funcional <fun> *)
-(function x -> 2 * x) (2 + 1);;(* Aplicación funcional de la abstracción anónima sobre el argumento entero reducido 3; evalúa a 6 de tipo int *)
-(function x -> 2 * x) 2 + 1;;(* Precedencia de operadores: la aplicación de funciones tiene mayor prioridad que los operadores infijos (+); evalúa ((2*2) + 1) = 5 *)
-(function y -> 2 * y) ((function y -> 2 * y) 3);;(* Composición de aplicaciones funcionales anónimas anidadas por paso de parámetros por valor; evalúa a 12 de tipo int *)
-let doble = function z -> 2 * z;;(* Declaración y ligadura global de una función de primer orden con signatura int -> int *)
-doble 2 + 1;;(* Prioridad de aplicación funcional frente a suma infija: (doble 2) + 1; evalúa a 5 de tipo int *)
-doble (doble 3);;(* Aplicación funcional secuencial con evaluación del argumento entre paréntesis en primer lugar; evalúa a 12 de tipo int *)
-(*doble doble 3;; Error de tipos: la aplicación funcional asocia por la izquierda ((doble doble) 3). 'doble' espera un int y recibe un valor de tipo int -> int*)
-abs (1 - 2);;(* Invocación a la función estándar 'abs' de tipo int -> int sobre el resultado entero -1; evalúa a 1 de tipo int *)
-abs 1;;(* Aplicación de 'abs' sobre el entero positivo 1; evalúa a 1 de tipo int *)
-(*abs -1;; Error sintáctico y semántico: '-' se analiza como operador binario infijo de resta sobre 'abs' en vez de signo unario. Requiere paréntesis: abs (-1)*)
-let abs = function x -> if x >= 0. then x else -. x;;(* Enmascaramiento de 'abs'. El uso de literales y operadores flotantes infiere la signatura float -> float *)
-(*abs 1;; Error de tipos: la ligadura actual de 'abs' exige un argumento float y recibe un int*)
-abs 1.5;;(* Aplicación de la nueva función 'abs' sobre un literal float positivo; evalúa a 1.5 de tipo float *)
-Stdlib.abs 1;;(* Resolución cualificada mediante 'Stdlib' para acceder a la implementación entera original soslayando el nuevo 'abs'; evalúa a 1 de tipo int *)
-let suma = function (x,y) -> x + y;;(* Definición de función no currificada; su parámetro formal es una tupla canónica con tipo int * int -> int *)
-2 * suma (2,3) - suma (1,1);;(* Evaluación de expresiones compuestas con tuplas como argumentos; evalúa (2 * 5) - 2 = 8 de tipo int *)
-(*x;; Error de alcance (unbound value): 'x' era una variable ligada únicamente dentro del cuerpo de la función 'suma' y no existe en el entorno global*)
-(*(function y -> x + y);; Error de compilación: la variable 'x' no está ligada (free variable sin ligadura previa) dentro de este contexto*)
-let sumac = function x -> (function y -> x + y);;(* Definición canónica de función currificada mediante clausuras anidadas. Signatura: int -> int -> int *)
-sumac 3;;(* Aplicación parcial: suministrar el primer argumento fija 'x' y devuelve una clausura de tipo int -> int *)
-(sumac 3) 2;;(* Evaluación explícita de la clausura intermedia pasándole el segundo argumento 2; evalúa a 5 de tipo int *)
-sumac 3 2;;(* Aplicación currificada estándar por asociatividad a la izquierda: idéntica a '(sumac 3) 2'; evalúa a 5 de tipo int *)
-suma (3, 2) = sumac 3 2;;(* Comparación de equivalencia entre función sobre tupla y versión currificada; evalúa a true de tipo bool *)
-(*suma 3;; Error de tipos: 'suma' espera una tupla binaria (int * int) y no admite aplicación parcial monomórfica de un entero aislado*)
-let suma5 = sumac 5;;(* Creación de una clausura mediante aplicación parcial fijando el valor 5 en el entorno de la función; tipo int -> int *)
-suma5 10;;(* Aplicación de la clausura 'suma5' sobre el argumento 10; evalúa a 15 de tipo int *)
-let sumac x = function y -> x + y;;(* Definición de currificación mediante azúcar sintáctico de parámetros en cabecera; signatura int -> int -> int *)
-sumac 3 2;;(* Invocación de la función currificada resultante; evalúa a 5 de tipo int *)
-let sumac x y = x + y;;(* Definición idiomática estándar de funciones multicurrificadas en OCaml; signatura int -> int -> int *)
-sumac 3 2;;(* Invocación directa pasándole argumentos de forma contigua; evalúa a 5 de tipo int *)
-(+);;(* Conversión de operador infijo a función en formato prefijo mediante paréntesis. Tipo: int -> int -> int *)
-(+) 3 2;;(* Aplicación en forma prefija del operador aditivo binario sobre dos argumentos contiguos; evalúa a 5 de tipo int *)
-(<=);;(* Conversión a forma prefija del operador de comparación genérico. Tipo polimórfico: 'a -> 'a -> bool *)
-let adult = (<=) 18;;(* Aplicación parcial fijando el primer operando como 18. Clausura resultante: fun x -> 18 <= x. Tipo: int -> bool *)
-adult 18;;(* Evaluación de 18 <= 18; satisface la relación de orden reflexivo devolviendo true de tipo bool *)
-adult 12;;(* Evaluación de 18 <= 12; no satisface la relación de orden devolviendo false de tipo bool *)
-adult 25;;(* Evaluación de 18 <= 25; satisface la relación de orden devolviendo true de tipo bool *)
+(* Práctica 2 - Análisis de expresiones y entorno *)
+(* Fichero: frases.ml *)
+
+let maximo = max_int;;
+(* val maximo : int = 4611686018427387903 *)
+
+let minimo = min_int;;
+(* val minimo : int = -4611686018427387904 *)
+
+minimo + maximo;;
+(* - : int = -1 *)
+
+minimo + maximo + 1;;
+(* - : int = 0 *)
+
+maximo + 1;;
+(* - : int = -4611686018427387904 *)
+
+minimo = maximo + 1;;
+(* - : bool = true *)
+
+2 * minimo;;
+(* - : int = 0 *)
+
+minimo - 1 = maximo;;
+(* - : bool = true *)
+
+2 * maximo;;
+(* - : int = -2 *)
+
+let maximo = 1. /. 0.;;
+(* val maximo : float = infinity *)
+
+let minimo = -1.0 /. 0.;;
+(* val minimo : float = neg_infinity *)
+
+1. /. maximo;;
+(* - : float = 0. *)
+
+1. /. minimo;;
+(* - : float = -0. *)
+
+1. /. maximo = 1. /. minimo;;
+(* - : bool = true *)
+
+0. /. 0.;;
+(* - : float = nan *)
+
+maximo +. maximo;;
+(* - : float = infinity *)
+
+maximo -. maximo;;
+(* - : float = nan *)
+
+-. maximo = minimo;;
+(* - : bool = true *)
+
+(* maximo + minimo;; *)
+(* Error: el operador + es para enteros y maximo/minimo son de tipo float *)
+
+not (minimo < maximo);;
+(* - : bool = false *)
+
+let not = "no";;
+(* val not : string = "no" *)
+
+(* not (minimo < maximo);; *)
+(* Error: 'not' ahora es un string y no se puede usar como función *)
+
+Stdlib.not (minimo < maximo);;
+(* - : bool = false *)
+
+let not = "si" in not ^ not;;
+(* - : string = "sisi" *)
+
+not;;
+(* - : string = "no" *)
+
+(function x -> 2 * x);;
+(* - : int -> int = <fun> *)
+
+(function x -> 2 * x) (2 + 1);;
+(* - : int = 6 *)
+
+(function x -> 2 * x) 2 + 1;;
+(* - : int = 5 *)
+
+(function y -> 2 * y) ((function y -> 2 * y) 3);;
+(* - : int = 12 *)
+
+let doble = function z -> 2 * z;;
+(* val doble : int -> int = <fun> *)
+
+doble 2 + 1;;
+(* - : int = 5 *)
+
+doble (doble 3);;
+(* - : int = 12 *)
+
+(* doble doble 3;; *)
+(* Error: 'doble' espera un número entero (int), no otra función *)
+
+abs (1 - 2);;
+(* - : int = 1 *)
+
+abs 1;;
+(* - : int = 1 *)
+
+(* abs -1;; *)
+(* Error: faltan paréntesis en el número negativo (-1) *)
+
+let abs = function x -> if x >= 0. then x else -. x;;
+(* val abs : float -> float = <fun> *)
+
+(* abs 1;; *)
+(* Error: la nueva función 'abs' espera un float y 1 es un int *)
+
+abs 1.5;;
+(* - : float = 1.5 *)
+
+Stdlib.abs 1;;
+(* - : int = 1 *)
+
+let suma = function (x,y) -> x + y;;
+(* val suma : int * int -> int = <fun> *)
+
+2 * suma (2,3) - suma (1,1);;
+(* - : int = 8 *)
+
+(* x;; *)
+(* Error: la variable 'x' no está definida fuera de la función *)
+
+(* (function y -> x + y);; *)
+(* Error: la variable 'x' no existe en este contexto *)
+
+let sumac = function x -> (function y -> x + y);;
+(* val sumac : int -> int -> int = <fun> *)
+
+sumac 3;;
+(* - : int -> int = <fun> *)
+
+(sumac 3) 2;;
+(* - : int = 5 *)
+
+sumac 3 2;;
+(* - : int = 5 *)
+
+suma (3, 2) = sumac 3 2;;
+(* - : bool = true *)
+
+(* suma 3;; *)
+(* Error: 'suma' espera una pareja (int * int), no un único entero *)
+
+let suma5 = sumac 5;;
+(* val suma5 : int -> int = <fun> *)
+
+suma5 10;;
+(* - : int = 15 *)
+
+let sumac x = function y -> x + y;;
+(* val sumac : int -> int -> int = <fun> *)
+
+sumac 3 2;;
+(* - : int = 5 *)
+
+let sumac x y = x + y;;
+(* val sumac : int -> int -> int = <fun> *)
+
+sumac 3 2;;
+(* - : int = 5 *)
+
+(+);;
+(* - : int -> int -> int = <fun> *)
+
+(+) 3 2;;
+(* - : int = 5 *)
+
+(<=);;
+(* - : 'a -> 'a -> bool = <fun> *)
+
+let adult = (<=) 18;;
+(* val adult : int -> bool = <fun> *)
+
+adult 18;;
+(* - : bool = true *)
+
+adult 12;;
+(* - : bool = false *)
+
+adult 25;;
+(* - : bool = true *)
