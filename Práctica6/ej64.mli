@@ -1,42 +1,60 @@
+(* 1. CURRY Y UNCURRY *)
+
 let curry f x y = f (x, y)
 
 let uncurry f (x, y) = f x y
 
 (*
-uncurry (+);;
-- : int * int -> int = <fun>
+Conversión entre formas currificadas y descurrificadas:
 
-let sum = uncurry (+);;
-val sum : int * int -> int = <fun>
+- uncurry (+);;
+  - : int * int -> int = <fun>
 
-sum 1;;
-Error de tipo: se esperaba un par (int * int) pero se pasó un entero.
+- let sum = uncurry (+);;
+  val sum : int * int -> int = <fun>
 
-sum (2,1);;
-- : int = 3
+- sum 1;;
+  Error: This expression has type int but an expression was expected of type
+         'a * 'b
+  (Explicación: sum espera una tupla de tipo int * int, pero recibió solo un valor entero).
 
-let g = curry (function p -> 2 * fst p + 3 * snd p);;
-val g : int -> int -> int = <fun>
+- sum (2,1);;
+  - : int = 3
 
-g (2,5);;
-Error de tipo: la función g está currificada y espera argumentos separados, no un par.
+- let g = curry (function p -> 2 * fst p + 3 * snd p);;
+  val g : int -> int -> int = <fun>
 
-let h = g 2;;
-val h : int -> int = <fun>
+- g (2,5);;
+  Error: This expression has type 'a * 'b
+         but an expression was expected of type int
+  (Explicación: g está currificada, requiere argumentos separados 'g 2 5' en lugar de un par).
 
-h 1, h 2, h 3;;
-- : int * int * int = (7, 10, 13)
+- let h = g 2;;
+  val h : int -> int = <fun>
+
+- h 1, h 2, h 3;;
+  - : int * int * int = (7, 10, 13)
+  (Explicación: g 2 y = 2*2 + 3*y = 4 + 3*y. Evaluando en 1, 2 y 3 da 7, 10 y 13).
 *)
+
+
+(* 2. COMPOSICIÓN DE FUNCIONES *)
 
 let comp f g x = f (g x)
 
 (*
-let f = let square x = x * x in comp square ((+) 1);;
-val f : int -> int = <fun>
+Composición currificada comp f g x = (f o g)(x):
 
-f 1, f 2, f 3;;
-- : int * int * int = (4, 9, 16)
+- let f = let square x = x * x in comp square ((+) 1);;
+  val f : int -> int = <fun>
+
+- f 1, f 2, f 3;;
+  - : int * int * int = (4, 9, 16)
+  (Explicación: f x = square(x + 1) = (x + 1)^2. Para 1, 2 y 3 da 4, 9 y 16).
 *)
+
+
+(* 3. POLIMORFISMO Y TEORÍA DE TIPOS *)
 
 let i x = x
 
@@ -47,10 +65,25 @@ let k (x, y) = y
 let l x = 0
 
 (*
-Respuestas sobre polimorfismo:
+Conteo de funciones totales posibles según el tipo:
 
-- Para i ('a -> 'a): 1 única función (la función identidad).
-- Para j ('a * 'b -> 'a): 1 única función (devuelve la primera componente del par).
-- Para k ('a * 'b -> 'b): 1 única función (devuelve la segunda componente del par).
-- Para l ('a -> int): Infinitas funciones (puede devolver cualquier entero constante).
+1. i : 'a -> 'a
+   Respuesta: 1 única función.
+   Por polimorfismo paramétrico, al no conocer la estructura del tipo 'a,
+   la única forma válida de devolver un valor de tipo 'a es retornar el propio argumento x (identidad).
+
+2. j : 'a * 'b -> 'a
+   Respuesta: 1 única función.
+   Recibe la tupla (x, y) y la única manera de producir una salida de tipo 'a
+   es retornar la primera componente (fst).
+
+3. k : 'a * 'b -> 'b
+   Respuesta: 1 única función.
+   Recibe la tupla (x, y) y la única manera de producir una salida de tipo 'b
+   es retornar la segunda componente (snd).
+
+4. l : 'a -> int
+   Respuesta: Infinitas funciones.
+   Dado que el tipo de retorno es 'int', se pueden definir infinitas funciones
+   constantes devolviendo cualquier valor entero (ej. l x = 0, l x = 1, l x = -5, etc.).
 *)
